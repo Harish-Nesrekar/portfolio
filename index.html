@@ -1,0 +1,1729 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Harish Nesrekar | Software Engineer & CSBS Undergrad</title>
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <!-- Three.js and OrbitControls -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+
+  <!-- GSAP for smooth animations -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+
+  <!-- Google Fonts: Inter & JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', '-apple-system', 'BlinkMacSystemFont', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          },
+          colors: {
+            brand: {
+              canvas: '#090b10',
+              surface: '#0d1117',
+              surface2: '#161b22',
+              card: 'rgba(13, 17, 23, 0.78)',
+              border: 'rgba(240, 243, 246, 0.08)',
+              borderHover: 'rgba(56, 139, 253, 0.35)',
+              blue: '#2f81f7',
+              blueMuted: '#1f6feb',
+              gold: '#d29922',
+          }
+        }
+      }
+    }
+  };
+  </script>
+
+  <style>
+    /* Scanlines effect overlay */
+    .scanlines {
+      background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.03), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.03));
+      background-size: 100% 3px, 6px 100%;
+      pointer-events: none;
+    }
+
+    /* Executive Subtle Scrollbar */
+    ::-webkit-scrollbar {
+      width: 7px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #090b10;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #21262d;
+      border-radius: 999px;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #30363d;
+    }
+
+    /* Refined Architectural Glassmorphism */
+    .executive-card {
+      background: rgba(13, 17, 23, 0.72);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(240, 243, 246, 0.08);
+      box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.04);
+    }
+
+    .executive-card-hover {
+      transition: all 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .executive-card-hover:hover {
+      transform: translateY(-3px);
+      border-color: rgba(56, 139, 253, 0.3);
+      box-shadow: 0 16px 36px -12px rgba(10, 20, 35, 0.7), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+    }
+
+    /* Canvas styling */
+    #webgl-canvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      outline: none;
+    }
+
+    /* Fluid Cursor (Professional & Minimal) */
+    .cursor-dot {
+      pointer-events: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 6px;
+      height: 6px;
+      background-color: #f0f3f6;
+      border-radius: 50%;
+      z-index: 9999;
+      transform: translate(-50%, -50%);
+      transition: opacity 0.2s ease;
+    }
+    .cursor-outline {
+      pointer-events: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 32px;
+      height: 32px;
+      border: 1px solid rgba(240, 243, 246, 0.35);
+      border-radius: 50%;
+      z-index: 9998;
+      transform: translate(-50%, -50%);
+      transition: width 0.2s, height 0.2s, background-color 0.2s, border-color 0.2s;
+    }
+  </style>
+</head>
+<body class="bg-[#090b10] text-[#f0f3f6] font-sans selection:bg-[#1f6feb]/30 selection:text-[#f0f3f6] overflow-x-hidden relative antialiased">
+
+  <!-- Minimal Fluid Cursor -->
+  <div id="cursor-dot" class="cursor-dot hidden md:block"></div>
+  <div id="cursor-outline" class="cursor-outline hidden md:block"></div>
+
+  <!-- Subtle Studio Ambient Glows -->
+  <div class="fixed top-[-15vw] left-[-10vw] w-[50vw] h-[50vw] bg-[#1f6feb]/[0.04] rounded-full blur-[160px] pointer-events-none -z-10"></div>
+  <div class="fixed bottom-[-15vw] right-[-10vw] w-[50vw] h-[50vw] bg-[#d29922]/[0.03] rounded-full blur-[180px] pointer-events-none -z-10"></div>
+
+  <!-- Toast Notification Container -->
+  <div id="toast-container" class="fixed bottom-6 right-6 z-50 flex flex-col gap-2 pointer-events-none"></div>
+
+  <!-- Refined Executive Navigation Bar -->
+  <header class="fixed top-0 left-0 right-0 z-40 px-4 sm:px-8 py-4 transition-all duration-300" id="main-header">
+    <div class="max-w-7xl mx-auto flex items-center justify-between executive-card rounded-2xl px-6 py-3.5">
+      <!-- Logo / Name & Institution -->
+      <a href="#hero" class="flex items-center gap-3.5 group">
+        <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-[#21262d] to-[#161b22] border border-white/10 flex items-center justify-center font-mono font-medium text-sm text-[#f0f3f6] group-hover:border-[#388bfd]/50 transition-colors shadow-sm">
+          HN
+        </div>
+        <div>
+          <div class="font-semibold text-sm tracking-tight text-[#f0f3f6] flex items-center gap-2">
+            Harish Nesrekar
+            <span class="inline-block w-1.5 h-1.5 rounded-full bg-[#3fb950]" title="Available for engineering opportunities"></span>
+          </div>
+          <p class="text-[11px] text-[#8b949e] font-mono tracking-tight hidden sm:block">CSBS • VTU Belagavi</p>
+        </div>
+      </a>
+
+      <!-- Clean Navigation Links -->
+      <nav class="hidden md:flex items-center gap-1 font-mono text-xs">
+        <a href="#projects" class="px-3.5 py-1.5 rounded-lg text-[#8b949e] hover:text-[#f0f3f6] hover:bg-white/[0.04] transition-colors">Projects</a>
+        <a href="#stats" class="px-3.5 py-1.5 rounded-lg text-[#8b949e] hover:text-[#f0f3f6] hover:bg-white/[0.04] transition-colors">DSA & Skills</a>
+        <a href="#about" class="px-3.5 py-1.5 rounded-lg text-[#8b949e] hover:text-[#f0f3f6] hover:bg-white/[0.04] transition-colors">About</a>
+        <a href="#contact" class="px-3.5 py-1.5 rounded-lg text-[#8b949e] hover:text-[#f0f3f6] hover:bg-white/[0.04] transition-colors">Contact</a>
+      </nav>
+
+      <!-- Quick Social & Direct Connectivity -->
+      <div class="flex items-center gap-2.5">
+        <a href="https://github.com/Harish-Nesrekar" target="_blank" rel="noopener noreferrer" class="p-2 rounded-xl text-[#8b949e] hover:text-[#f0f3f6] hover:bg-white/[0.05] border border-transparent hover:border-white/10 transition-all" title="GitHub Profile">
+          <i data-lucide="github" class="w-4 h-4"></i>
+        </a>
+        <a href="https://www.linkedin.com/in/harish-nesrekar-63a724333/" target="_blank" rel="noopener noreferrer" class="p-2 rounded-xl text-[#8b949e] hover:text-[#f0f3f6] hover:bg-white/[0.05] border border-transparent hover:border-white/10 transition-all" title="LinkedIn Profile">
+          <i data-lucide="linkedin" class="w-4 h-4"></i>
+        </a>
+        <button onclick="copyEmailToClipboard()" class="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 text-xs font-mono text-[#e6edf3] transition-all">
+          <i data-lucide="mail" class="w-3.5 h-3.5 text-[#8b949e]"></i>
+          <span>Email</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- HERO SECTION WITH ARCHITECTURAL 3D STUDIO -->
+  <section id="hero" class="relative w-full h-screen min-h-[700px] flex items-center overflow-hidden">
+    <!-- WebGL Canvas Container -->
+    <div class="absolute inset-0 z-0">
+      <canvas id="webgl-canvas"></canvas>
+    </div>
+
+    <!-- Architectural Studio HUD Helper -->
+    <div class="absolute top-24 left-6 z-10 pointer-events-none max-w-sm hidden lg:block">
+      <div class="executive-card p-3 rounded-xl">
+        <div class="flex items-center gap-2 text-[11px] font-mono text-[#8b949e] uppercase tracking-wider mb-1">
+          <span class="w-1.5 h-1.5 rounded-full bg-[#3fb950]"></span>
+          Interactive Developer Environment
+        </div>
+        <p class="text-xs text-[#8b949e] leading-relaxed">
+          Click and drag to explore the studio setup. Select any active desk node (screens, telemetry slate, university insignia) to inspect system details.
+        </p>
+      </div>
+    </div>
+
+    <!-- Hero Content Overlay (Executive Bio) -->
+    <div class="relative z-10 max-w-7xl mx-auto px-6 w-full pointer-events-none flex flex-col justify-end sm:justify-center h-full pb-20 sm:pb-0">
+      <div class="max-w-xl pointer-events-auto">
+        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full executive-card text-xs font-mono text-[#c9d1d9] mb-4">
+          <span class="w-1.5 h-1.5 rounded-full bg-[#388bfd]"></span>
+          <span>Software Engineering & System Architecture</span>
+        </div>
+
+        <h1 class="text-4xl sm:text-6xl font-semibold tracking-tight text-[#f0f3f6] mb-3">
+          Harish Nesrekar
+        </h1>
+        
+        <p class="text-sm sm:text-base text-[#8b949e] font-normal mb-5 leading-relaxed">
+          Third-year <strong class="text-[#f0f3f6] font-medium">Computer Science & Business Systems</strong> undergraduate at <span class="text-[#f0f3f6]">Visvesvaraya Technological University (VTU Belagavi)</span>. Focused on core algorithmic problem-solving, modern web platforms, and automated code inspection architectures.
+        </p>
+
+        <!-- Stats Chips in Hero -->
+        <div class="flex flex-wrap gap-2.5 mb-6">
+          <div class="executive-card px-3.5 py-1.5 rounded-xl flex items-center gap-2 text-xs">
+            <span class="w-1.5 h-1.5 rounded-full bg-[#3fb950]"></span>
+            <span class="text-[#8b949e]">DSA Solved:</span>
+            <span class="font-mono font-medium text-[#f0f3f6]">120+</span>
+          </div>
+          <div class="executive-card px-3.5 py-1.5 rounded-xl flex items-center gap-2 text-xs">
+            <span class="w-1.5 h-1.5 rounded-full bg-[#d29922]"></span>
+            <span class="text-[#8b949e]">Daily Streak:</span>
+            <span class="font-mono font-medium text-[#f0f3f6]">34 Days</span>
+          </div>
+          <div class="executive-card px-3.5 py-1.5 rounded-xl flex items-center gap-2 text-xs">
+            <span class="w-1.5 h-1.5 rounded-full bg-[#388bfd]"></span>
+            <span class="text-[#8b949e]">Program:</span>
+            <span class="font-mono text-[#c9d1d9]">B.Tech CSBS '28</span>
+          </div>
+        </div>
+
+        <!-- Direct Navigation CTA -->
+        <div class="flex flex-wrap items-center gap-3">
+          <a href="#projects" class="px-5 py-2.5 rounded-xl bg-[#21262d] hover:bg-[#30363d] text-[#f0f3f6] border border-white/10 font-medium text-xs transition-all flex items-center gap-2 shadow-sm">
+            <i data-lucide="layers" class="w-3.5 h-3.5 text-[#388bfd]"></i>
+            View Projects
+          </a>
+          <a href="#stats" class="px-5 py-2.5 rounded-xl executive-card hover:bg-white/[0.06] text-[#c9d1d9] font-medium text-xs transition-all flex items-center gap-2">
+            <i data-lucide="code-2" class="w-3.5 h-3.5 text-[#3fb950]"></i>
+            DSA Telemetry
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Quick Node Selector (Subtle Bottom Floating Control) -->
+    <div class="absolute bottom-6 left-1/2 -translate-x-1/2 z-20 w-11/12 max-w-2xl pointer-events-auto">
+      <div class="executive-card rounded-2xl p-1.5 px-3 flex items-center justify-between gap-1 overflow-x-auto text-xs font-mono">
+        <span class="text-[#6e7681] text-[10px] uppercase font-semibold tracking-wider px-2 hidden sm:inline">Inspect Node:</span>
+        <button onclick="triggerHotspot('screen1')" class="px-3 py-1.5 rounded-lg text-[#8b949e] hover:text-[#f0f3f6] hover:bg-white/[0.05] flex items-center gap-1.5 whitespace-nowrap transition-colors">
+          <i data-lucide="monitor" class="w-3.5 h-3.5 text-[#388bfd]"></i> UrbanSaathi
+        </button>
+        <button onclick="triggerHotspot('screen2')" class="px-3 py-1.5 rounded-lg text-[#8b949e] hover:text-[#f0f3f6] hover:bg-white/[0.05] flex items-center gap-1.5 whitespace-nowrap transition-colors">
+          <i data-lucide="cpu" class="w-3.5 h-3.5 text-[#d29922]"></i> GitBug AI
+        </button>
+        <button onclick="triggerHotspot('dsaTerminal')" class="px-3 py-1.5 rounded-lg text-[#8b949e] hover:text-[#f0f3f6] hover:bg-white/[0.05] flex items-center gap-1.5 whitespace-nowrap transition-colors">
+          <i data-lucide="terminal" class="w-3.5 h-3.5 text-[#3fb950]"></i> DSA Progress
+        </button>
+        <button onclick="triggerHotspot('vtuBadge')" class="px-3 py-1.5 rounded-lg text-[#8b949e] hover:text-[#f0f3f6] hover:bg-white/[0.05] flex items-center gap-1.5 whitespace-nowrap transition-colors">
+          <i data-lucide="graduation-cap" class="w-3.5 h-3.5 text-[#c9d1d9]"></i> VTU Belagavi
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- INSPECTOR MODAL POPUP FOR 3D ASSETS -->
+  <div id="inspector-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-md opacity-0 pointer-events-none transition-opacity duration-200">
+    <div id="inspector-card" class="executive-card w-full max-w-xl rounded-2xl p-6 sm:p-8 transform scale-95 transition-transform duration-200 relative shadow-2xl">
+      <button onclick="closeInspectorModal()" class="absolute top-5 right-5 p-2 rounded-xl text-[#8b949e] hover:text-[#f0f3f6] hover:bg-white/[0.06] transition-colors">
+        <i data-lucide="x" class="w-4 h-4"></i>
+      </button>
+
+      <div id="modal-badge-container" class="mb-3">
+        <!-- Injected badge -->
+      </div>
+      <h3 id="modal-title" class="text-xl font-semibold text-[#f0f3f6] mb-2 tracking-tight">Node Details</h3>
+      <div id="modal-body" class="text-[#8b949e] text-xs sm:text-sm leading-relaxed mb-6 space-y-3">
+        <!-- Injected content -->
+      </div>
+      <div id="modal-actions" class="flex flex-wrap items-center gap-3">
+        <!-- Injected buttons -->
+      </div>
+    </div>
+  </div>
+
+  <!-- PROJECTS SECTION -->
+  <section id="projects" class="py-24 px-6 relative z-10 bg-[#0d1117]/60">
+    <div class="max-w-7xl mx-auto">
+      <div class="flex flex-col md:flex-row md:items-end justify-between mb-16 gap-4">
+        <div>
+          <span class="text-[#388bfd] font-mono text-xs uppercase tracking-widest mb-1.5 block">Portfolio</span>
+          <h2 class="text-2xl sm:text-3xl font-semibold text-[#f0f3f6] tracking-tight">Engineered Projects & Implementations</h2>
+        </div>
+        <p class="text-[#8b949e] text-xs sm:text-sm max-w-md">
+          Production web applications and automated code diagnostics, prioritizing architectural modularity and performance.
+        </p>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8">
+        <!-- PROJECT 1: UrbanSaathi (Live) -->
+        <div class="executive-card executive-card-hover rounded-2xl p-7 flex flex-col justify-between">
+          <div>
+            <div class="flex items-center justify-between mb-4">
+              <div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11px] font-mono bg-[#3fb950]/10 text-[#3fb950] border border-[#3fb950]/20">
+                <span class="w-1.5 h-1.5 rounded-full bg-[#3fb950]"></span>
+                Production Live
+              </div>
+              <span class="text-[11px] font-mono text-[#6e7681]">Vercel Edge</span>
+            </div>
+
+            <h3 class="text-xl font-semibold text-[#f0f3f6] mb-2 tracking-tight">UrbanSaathi</h3>
+            <p class="text-xs sm:text-sm text-[#8b949e] leading-relaxed mb-6">
+              A comprehensive civic service and urban resources platform engineered to connect citizens with verified regional services, municipal tools, and localized directory assistance. Built with responsive interfaces, optimized client routing, and cloud deployment.
+            </p>
+
+            <div class="flex flex-wrap gap-1.5 mb-8">
+              <span class="px-2.5 py-1 text-[11px] rounded-md bg-[#161b22] border border-white/5 text-[#c9d1d9] font-mono">React</span>
+              <span class="px-2.5 py-1 text-[11px] rounded-md bg-[#161b22] border border-white/5 text-[#c9d1d9] font-mono">Tailwind CSS</span>
+              <span class="px-2.5 py-1 text-[11px] rounded-md bg-[#161b22] border border-white/5 text-[#c9d1d9] font-mono">JavaScript</span>
+              <span class="px-2.5 py-1 text-[11px] rounded-md bg-[#161b22] border border-white/5 text-[#c9d1d9] font-mono">REST API</span>
+              <span class="px-2.5 py-1 text-[11px] rounded-md bg-[#161b22] border border-white/5 text-[#c9d1d9] font-mono">Vercel</span>
+            </div>
+          </div>
+
+          <div class="flex items-center gap-3 pt-4 border-t border-white/[0.06]">
+            <a href="https://urban-saathi.vercel.app" target="_blank" rel="noopener noreferrer" class="px-4 py-2 rounded-xl bg-[#21262d] hover:bg-[#30363d] text-[#f0f3f6] border border-white/10 font-medium text-xs transition-all flex items-center gap-2">
+              <i data-lucide="external-link" class="w-3.5 h-3.5 text-[#388bfd]"></i>
+              Visit Application
+            </a>
+            <a href="https://github.com/Harish-Nesrekar" target="_blank" rel="noopener noreferrer" class="px-4 py-2 rounded-xl executive-card hover:bg-white/[0.06] text-[#8b949e] hover:text-[#f0f3f6] font-medium text-xs transition-all flex items-center gap-2">
+              <i data-lucide="github" class="w-3.5 h-3.5"></i>
+              Repository
+            </a>
+          </div>
+        </div>
+
+        <!-- PROJECT 2: GitBug AI (Under development) -->
+        <div class="executive-card executive-card-hover rounded-2xl p-7 flex flex-col justify-between">
+          <div>
+            <div class="flex items-center justify-between mb-4">
+              <div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11px] font-mono bg-[#d29922]/10 text-[#d29922] border border-[#d29922]/20">
+                <span class="w-1.5 h-1.5 rounded-full bg-[#d29922]"></span>
+                In Development
+              </div>
+              <span class="text-[11px] font-mono text-[#6e7681]">Static Analysis Engine</span>
+            </div>
+
+            <h3 class="text-xl font-semibold text-[#f0f3f6] mb-2 tracking-tight">GitBug AI</h3>
+            <p class="text-xs sm:text-sm text-[#8b949e] leading-relaxed mb-6">
+              An intelligent repository diagnostics engine that parses arbitrary Git repositories, constructs Abstract Syntax Trees (ASTs), executes static code analysis, and leverages machine learning models to detect logic hotspots, syntax vulnerabilities, and performance regressions.
+            </p>
+
+            <div class="flex flex-wrap gap-1.5 mb-8">
+              <span class="px-2.5 py-1 text-[11px] rounded-md bg-[#161b22] border border-white/5 text-[#c9d1d9] font-mono">AST Generation</span>
+              <span class="px-2.5 py-1 text-[11px] rounded-md bg-[#161b22] border border-white/5 text-[#c9d1d9] font-mono">Git Engine</span>
+              <span class="px-2.5 py-1 text-[11px] rounded-md bg-[#161b22] border border-white/5 text-[#c9d1d9] font-mono">TypeScript / Python</span>
+              <span class="px-2.5 py-1 text-[11px] rounded-md bg-[#161b22] border border-white/5 text-[#c9d1d9] font-mono">Code Security</span>
+            </div>
+          </div>
+
+          <div class="flex items-center gap-3 pt-4 border-t border-white/[0.06]">
+            <button onclick="triggerHotspot('screen2')" class="px-4 py-2 rounded-xl bg-[#21262d] hover:bg-[#30363d] text-[#f0f3f6] border border-white/10 font-medium text-xs transition-all flex items-center gap-2">
+              <i data-lucide="cpu" class="w-3.5 h-3.5 text-[#d29922]"></i>
+              Inspect In 3D
+            </button>
+            <a href="https://github.com/Harish-Nesrekar" target="_blank" rel="noopener noreferrer" class="px-4 py-2 rounded-xl executive-card hover:bg-white/[0.06] text-[#8b949e] hover:text-[#f0f3f6] font-medium text-xs transition-all flex items-center gap-2">
+              <i data-lucide="github" class="w-3.5 h-3.5"></i>
+              GitHub Updates
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- DSA & CODING METRICS DASHBOARD -->
+  <section id="stats" class="py-24 px-6 relative z-10">
+    <div class="max-w-7xl mx-auto">
+      <div class="text-center max-w-2xl mx-auto mb-16">
+        <span class="text-[#3fb950] font-mono text-xs uppercase tracking-widest mb-1.5 block">Metrics & Telemetry</span>
+        <h2 class="text-2xl sm:text-3xl font-semibold text-[#f0f3f6] tracking-tight">Algorithmic Practice & Problem Solving</h2>
+      </div>
+
+      <!-- Metrics Cards Grid -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-10">
+        <div class="executive-card p-6 rounded-2xl flex flex-col justify-between">
+          <div class="flex items-center justify-between text-[#8b949e] mb-2">
+            <span class="text-xs font-mono">PROBLEMS SOLVED</span>
+            <i data-lucide="check-circle-2" class="w-4 h-4 text-[#3fb950]"></i>
+          </div>
+          <div class="text-3xl font-semibold text-[#f0f3f6] font-mono mb-1">120<span class="text-[#388bfd]">+</span></div>
+          <p class="text-xs text-[#8b949e]">Solved across LeetCode & takeUforward</p>
+        </div>
+
+        <div class="executive-card p-6 rounded-2xl flex flex-col justify-between">
+          <div class="flex items-center justify-between text-[#8b949e] mb-2">
+            <span class="text-xs font-mono">ACTIVE STREAK</span>
+            <i data-lucide="activity" class="w-4 h-4 text-[#d29922]"></i>
+          </div>
+          <div class="text-3xl font-semibold text-[#f0f3f6] font-mono mb-1">34 <span class="text-xs font-sans text-[#8b949e]">Days</span></div>
+          <p class="text-xs text-[#8b949e]">Consecutive daily problem solving</p>
+        </div>
+
+        <div class="executive-card p-6 rounded-2xl flex flex-col justify-between">
+          <div class="flex items-center justify-between text-[#8b949e] mb-2">
+            <span class="text-xs font-mono">CORE TOPICS</span>
+            <i data-lucide="git-branch" class="w-4 h-4 text-[#388bfd]"></i>
+          </div>
+          <div class="text-sm font-semibold text-[#f0f3f6] mb-1">DP, Binary Trees, Graphs</div>
+          <p class="text-xs text-[#8b949e]">Binary Search, Arrays, Two Pointers</p>
+        </div>
+
+        <div class="executive-card p-6 rounded-2xl flex flex-col justify-between">
+          <div class="flex items-center justify-between text-[#8b949e] mb-2">
+            <span class="text-xs font-mono">CURRICULUM</span>
+            <i data-lucide="book-open" class="w-4 h-4 text-[#c9d1d9]"></i>
+          </div>
+          <div class="text-sm font-semibold text-[#f0f3f6] mb-1">takeUforward TUF & LeetCode</div>
+          <p class="text-xs text-[#8b949e]">Striver's A2Z DSA sheet & daily practice</p>
+        </div>
+      </div>
+
+      <!-- External DSA Profiles Links Banner -->
+      <div class="executive-card rounded-2xl p-6 sm:p-7 flex flex-col md:flex-row items-center justify-between gap-6">
+        <div>
+          <h3 class="text-base font-semibold text-[#f0f3f6] mb-1">Direct Verification Links</h3>
+          <p class="text-xs text-[#8b949e]">View live submission logs, activity graphs, and algorithmic problem resolutions.</p>
+        </div>
+        <div class="flex flex-wrap items-center gap-2.5">
+          <a href="https://leetcode.com/u/harish-nesrekar/" target="_blank" rel="noopener noreferrer" class="px-3.5 py-2 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 text-[#e6edf3] font-mono text-xs flex items-center gap-2 transition-all">
+            <i data-lucide="code" class="w-3.5 h-3.5 text-[#d29922]"></i>
+            LeetCode Profile
+          </a>
+          <a href="https://takeuforward.org/profile/harish_nesrekar" target="_blank" rel="noopener noreferrer" class="px-3.5 py-2 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 text-[#e6edf3] font-mono text-xs flex items-center gap-2 transition-all">
+            <i data-lucide="external-link" class="w-3.5 h-3.5 text-[#388bfd]"></i>
+            takeUforward Profile
+          </a>
+          <a href="https://github.com/Harish-Nesrekar" target="_blank" rel="noopener noreferrer" class="px-3.5 py-2 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 text-[#e6edf3] font-mono text-xs flex items-center gap-2 transition-all">
+            <i data-lucide="github" class="w-3.5 h-3.5"></i>
+            GitHub
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ABOUT & BACKGROUND SECTION -->
+  <section id="about" class="py-24 px-6 relative z-10 bg-[#0d1117]/40">
+    <div class="max-w-7xl mx-auto">
+      <div class="text-center max-w-2xl mx-auto mb-16">
+        <span class="text-[#388bfd] font-mono text-xs uppercase tracking-widest mb-1.5 block">Foundation</span>
+        <h2 class="text-2xl sm:text-3xl font-semibold text-[#f0f3f6] tracking-tight">Academic Curriculum & Technical Core</h2>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <!-- Education Card -->
+        <div class="executive-card executive-card-hover rounded-2xl p-6">
+          <div class="w-10 h-10 rounded-xl bg-white/[0.04] border border-white/10 flex items-center justify-center text-[#f0f3f6] mb-4">
+            <i data-lucide="graduation-cap" class="w-5 h-5 text-[#388bfd]"></i>
+          </div>
+          <div class="text-[11px] font-mono text-[#8b949e] mb-1">2022 — 2026</div>
+          <h3 class="text-base font-semibold text-[#f0f3f6] mb-1">Visvesvaraya Technological University</h3>
+          <p class="text-xs text-[#c9d1d9] mb-3">B.Tech in Computer Science and Business Systems (CSBS)</p>
+          <p class="text-xs text-[#8b949e] leading-relaxed">
+            3rd Year undergraduate based at VTU Belagavi. The CSBS curriculum bridges advanced computing theory, systems architecture, and data engineering with business analytics and organizational technology.
+          </p>
+        </div>
+
+        <!-- Problem Solving Engine -->
+        <div class="executive-card executive-card-hover rounded-2xl p-6">
+          <div class="w-10 h-10 rounded-xl bg-white/[0.04] border border-white/10 flex items-center justify-center text-[#f0f3f6] mb-4">
+            <i data-lucide="cpu" class="w-5 h-5 text-[#3fb950]"></i>
+          </div>
+          <div class="text-[11px] font-mono text-[#8b949e] mb-1">Disciplined Engineering</div>
+          <h3 class="text-base font-semibold text-[#f0f3f6] mb-1">Algorithmic Proficiency</h3>
+          <p class="text-xs text-[#c9d1d9] mb-3">Time & Space Complexity Optimization</p>
+          <p class="text-xs text-[#8b949e] leading-relaxed mb-4">
+            Focused on writing clean, optimal solutions using C++ and Java with strict adherence to asymptotic efficiency and edge-case validation.
+          </p>
+          <div class="flex items-center gap-2 text-xs font-mono text-[#3fb950] bg-[#3fb950]/[0.08] px-2.5 py-1.5 rounded-lg border border-[#3fb950]/20">
+            <span class="w-1.5 h-1.5 rounded-full bg-[#3fb950]"></span>
+            Active 34-Day Streak
+          </div>
+        </div>
+
+        <!-- Tech Stack & Specialties -->
+        <div class="executive-card executive-card-hover rounded-2xl p-6">
+          <div class="w-10 h-10 rounded-xl bg-white/[0.04] border border-white/10 flex items-center justify-center text-[#f0f3f6] mb-4">
+            <i data-lucide="layers" class="w-5 h-5 text-[#d29922]"></i>
+          </div>
+          <div class="text-[11px] font-mono text-[#8b949e] mb-1">Tooling & Environment</div>
+          <h3 class="text-base font-semibold text-[#f0f3f6] mb-3">Core Technical Stack</h3>
+          <div class="flex flex-wrap gap-1.5 mb-4">
+            <span class="px-2 py-1 text-xs rounded-md bg-[#161b22] border border-white/5 text-[#c9d1d9] font-mono">C++</span>
+            <span class="px-2 py-1 text-xs rounded-md bg-[#161b22] border border-white/5 text-[#c9d1d9] font-mono">Java</span>
+            <span class="px-2 py-1 text-xs rounded-md bg-[#161b22] border border-white/5 text-[#c9d1d9] font-mono">TypeScript</span>
+            <span class="px-2 py-1 text-xs rounded-md bg-[#161b22] border border-white/5 text-[#c9d1d9] font-mono">JavaScript</span>
+            <span class="px-2 py-1 text-xs rounded-md bg-[#161b22] border border-white/5 text-[#c9d1d9] font-mono">React</span>
+            <span class="px-2 py-1 text-xs rounded-md bg-[#161b22] border border-white/5 text-[#c9d1d9] font-mono">Node.js</span>
+            <span class="px-2 py-1 text-xs rounded-md bg-[#161b22] border border-white/5 text-[#c9d1d9] font-mono">Git</span>
+            <span class="px-2 py-1 text-xs rounded-md bg-[#161b22] border border-white/5 text-[#c9d1d9] font-mono">Tailwind CSS</span>
+          </div>
+          <p class="text-xs text-[#8b949e]">
+            Strong emphasis on typed interfaces, clean modular decomposition, and Git collaboration workflows.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CONTACT & FOOTER SECTION -->
+  <section id="contact" class="py-24 px-6 relative z-10">
+    <div class="max-w-4xl mx-auto executive-card rounded-2xl p-8 sm:p-12 shadow-xl relative overflow-hidden">
+      <div class="text-center max-w-xl mx-auto mb-10">
+        <span class="text-[#388bfd] font-mono text-xs uppercase tracking-widest mb-1.5 block">Contact</span>
+        <h2 class="text-2xl sm:text-3xl font-semibold text-[#f0f3f6] tracking-tight mb-2.5">Connect With Harish</h2>
+        <p class="text-xs sm:text-sm text-[#8b949e]">
+          Available for software engineering internships, technical collaborations, and full-stack system discussions.
+        </p>
+      </div>
+
+      <!-- Quick Copy Email Box -->
+      <div class="executive-card p-3.5 rounded-xl max-w-md mx-auto flex items-center justify-between gap-2 mb-8">
+        <div class="flex items-center gap-3 overflow-hidden">
+          <div class="p-2 rounded-lg bg-white/[0.04] text-[#8b949e]">
+            <i data-lucide="mail" class="w-4 h-4"></i>
+          </div>
+          <div class="overflow-hidden">
+            <div class="text-[10px] font-mono text-[#6e7681] uppercase tracking-wider">Email Address</div>
+            <div class="text-xs sm:text-sm font-mono text-[#f0f3f6] truncate font-medium">harishnesrekar@gmail.com</div>
+          </div>
+        </div>
+        <button onclick="copyEmailToClipboard()" class="px-3 py-1.5 rounded-lg bg-[#21262d] hover:bg-[#30363d] text-[#f0f3f6] border border-white/10 font-mono text-xs transition-all flex items-center gap-1.5 whitespace-nowrap">
+          <i data-lucide="copy" class="w-3.5 h-3.5"></i>
+          <span>Copy</span>
+        </button>
+      </div>
+
+      <!-- Profile Links Grid -->
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 max-w-2xl mx-auto">
+        <a href="https://github.com/Harish-Nesrekar" target="_blank" rel="noopener noreferrer" class="executive-card p-3.5 rounded-xl flex flex-col items-center justify-center gap-2 hover:border-[#388bfd]/40 text-[#8b949e] hover:text-[#f0f3f6] transition-all">
+          <i data-lucide="github" class="w-4 h-4"></i>
+          <span class="text-xs font-mono">GitHub</span>
+        </a>
+        <a href="https://www.linkedin.com/in/harish-nesrekar-63a724333/" target="_blank" rel="noopener noreferrer" class="executive-card p-3.5 rounded-xl flex flex-col items-center justify-center gap-2 hover:border-[#388bfd]/40 text-[#8b949e] hover:text-[#f0f3f6] transition-all">
+          <i data-lucide="linkedin" class="w-4 h-4 text-[#388bfd]"></i>
+          <span class="text-xs font-mono">LinkedIn</span>
+        </a>
+        <a href="https://leetcode.com/u/harish-nesrekar/" target="_blank" rel="noopener noreferrer" class="executive-card p-3.5 rounded-xl flex flex-col items-center justify-center gap-2 hover:border-[#388bfd]/40 text-[#8b949e] hover:text-[#f0f3f6] transition-all">
+          <i data-lucide="code" class="w-4 h-4 text-[#d29922]"></i>
+          <span class="text-xs font-mono">LeetCode</span>
+        </a>
+        <a href="https://takeuforward.org/profile/harish_nesrekar" target="_blank" rel="noopener noreferrer" class="executive-card p-3.5 rounded-xl flex flex-col items-center justify-center gap-2 hover:border-[#388bfd]/40 text-[#8b949e] hover:text-[#f0f3f6] transition-all">
+          <i data-lucide="terminal" class="w-4 h-4 text-[#3fb950]"></i>
+          <span class="text-xs font-mono">takeUforward</span>
+        </a>
+      </div>
+
+      <div class="mt-12 text-center border-t border-white/[0.06] pt-6 text-[11px] text-[#6e7681] font-mono">
+        © Harish Nesrekar • Visvesvaraya Technological University (VTU) Belagavi
+      </div>
+    </div>
+  </section>
+
+  <!-- JAVASCRIPT: 3D STUDIO SETUP, LIGHTING & LOGIC -->
+  <script>
+    // Initialize Lucide icons
+    lucide.createIcons();
+
+    /* =========================================================================
+       SUBTLE FLUID CURSOR
+       ========================================================================= */
+    const cursorDot = document.getElementById('cursor-dot');
+    const cursorOutline = document.getElementById('cursor-outline');
+    let mouseX = window.innerWidth / 2;
+    let mouseY = window.innerHeight / 2;
+    let outlineX = mouseX;
+    let outlineY = mouseY;
+
+    window.addEventListener('mousemove', (e) => {
+      mouseX = e.clientX;
+      mouseY = e.clientY;
+      if (cursorDot) {
+        cursorDot.style.left = `${mouseX}px`;
+        cursorDot.style.top = `${mouseY}px`;
+      }
+    });
+
+    function animateCursor() {
+      outlineX += (mouseX - outlineX) * 0.16;
+      outlineY += (mouseY - outlineY) * 0.16;
+      if (cursorOutline) {
+        cursorOutline.style.left = `${outlineX}px`;
+        cursorOutline.style.top = `${outlineY}px`;
+      }
+      requestAnimationFrame(animateCursor);
+    }
+    animateCursor();
+
+    /* =========================================================================
+       ARCHITECTURAL 3D STUDIO (CINEMATIC LIGHTING & NATURAL DEVELOPER SETUP)
+       ========================================================================= */
+    let scene, camera, renderer, controls;
+    let interactiveObjects = [];
+    const raycaster = new THREE.Raycaster();
+    const mouse = new THREE.Vector2();
+    let hoveredObject = null;
+    let isInspecting = false;
+
+    // Camera initial state
+    const DEFAULT_CAM_POS = { x: 3.2, y: 2.6, z: 4.4 };
+    const DEFAULT_TARGET = { x: 0, y: 1.15, z: 0 };
+
+    function initThreeScene() {
+      const canvas = document.getElementById('webgl-canvas');
+
+      // 1. Scene setup
+      scene = new THREE.Scene();
+      scene.background = new THREE.Color(0x090b10);
+      scene.fog = new THREE.FogExp2(0x090b10, 0.07);
+
+      // 2. Camera setup
+      camera = new THREE.PerspectiveCamera(42, window.innerWidth / window.innerHeight, 0.1, 100);
+      camera.position.set(DEFAULT_CAM_POS.x, DEFAULT_CAM_POS.y, DEFAULT_CAM_POS.z);
+
+      // 3. Renderer setup
+      renderer = new THREE.WebGLRenderer({
+        canvas: canvas,
+        antialias: true,
+        powerPreference: "high-performance"
+      });
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+      renderer.shadowMap.enabled = true;
+      renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+      renderer.toneMapping = THREE.ACESFilmicToneMapping;
+      renderer.toneMappingExposure = 1.05;
+
+      // 4. OrbitControls
+      controls = new THREE.OrbitControls(camera, renderer.domElement);
+      controls.enableDamping = true;
+      controls.dampingFactor = 0.05;
+      controls.maxPolarAngle = Math.PI / 2 - 0.05; // Prevent camera under floor
+      controls.minDistance = 2.0;
+      controls.maxDistance = 8.0;
+      controls.target.set(DEFAULT_TARGET.x, DEFAULT_TARGET.y, DEFAULT_TARGET.z);
+
+      // 5. PROFESSIONAL ARCHITECTURAL STUDIO LIGHTING
+      // Soft cool daylight ambient (5500K equivalent)
+      const ambientLight = new THREE.AmbientLight(0xced8e5, 0.65);
+      scene.add(ambientLight);
+
+      // Main directional studio fill (simulating north-facing studio glass)
+      const studioFill = new THREE.DirectionalLight(0xe2e8f0, 0.95);
+      studioFill.position.set(6, 8, 5);
+      studioFill.castShadow = true;
+      studioFill.shadow.mapSize.width = 1024;
+      studioFill.shadow.mapSize.height = 1024;
+      studioFill.shadow.bias = -0.0004;
+      scene.add(studioFill);
+
+      // Warm architectural desk lamp key light (3000K warm tungsten)
+      const warmDeskWarmth = new THREE.PointLight(0xffdfa8, 2.2, 4.5);
+      warmDeskWarmth.position.set(-0.95, 1.7, -0.1);
+      warmDeskWarmth.castShadow = true;
+      scene.add(warmDeskWarmth);
+
+      // Subtle natural screen bounce (cool neutral white/slate)
+      const screenBounceLeft = new THREE.PointLight(0xdbeafe, 1.3, 3.2);
+      screenBounceLeft.position.set(-0.48, 1.45, 0.2);
+      scene.add(screenBounceLeft);
+
+      const screenBounceRight = new THREE.PointLight(0xf1f5f9, 1.1, 3.2);
+      screenBounceRight.position.set(0.48, 1.45, 0.2);
+      scene.add(screenBounceRight);
+
+      // Studio rim light for developer hair and shoulder separation
+      const rimLight = new THREE.PointLight(0xfef3c7, 0.9, 5);
+      rimLight.position.set(0, 2.8, -1.8);
+      scene.add(rimLight);
+
+      // 6. Build the Workspace Environment
+      createWorkstationEnvironment();
+
+      // 7. Event Listeners
+      window.addEventListener('resize', onWindowResize);
+      window.addEventListener('mousemove', onSceneMouseMove);
+      window.addEventListener('click', onSceneClick);
+    }
+
+    /* Helper canvas textures for realistic IDE editor surfaces */
+    function createIDETexture(tabTitle, activeLang, codeLines) {
+      const c = document.createElement('canvas');
+      c.width = 512;
+      c.height = 320;
+      const ctx = c.getContext('2d');
+
+      // Modern dark editor slate background (#0d1117)
+      ctx.fillStyle = '#0d1117';
+      ctx.fillRect(0, 0, c.width, c.height);
+
+      // Window Header Bar (#161b22)
+      ctx.fillStyle = '#161b22';
+      ctx.fillRect(0, 0, c.width, 36);
+
+      // Subtle macOS/Window controls
+      ctx.fillStyle = '#ff5f56'; ctx.beginPath(); ctx.arc(18, 18, 5, 0, Math.PI*2); ctx.fill();
+      ctx.fillStyle = '#ffbd2e'; ctx.beginPath(); ctx.arc(34, 18, 5, 0, Math.PI*2); ctx.fill();
+      ctx.fillStyle = '#27c93f'; ctx.beginPath(); ctx.arc(50, 18, 5, 0, Math.PI*2); ctx.fill();
+
+      // Active tab pill
+      ctx.fillStyle = '#0d1117';
+      ctx.fillRect(72, 6, 175, 30);
+      ctx.fillStyle = '#e6edf3';
+      ctx.font = '500 12px "JetBrains Mono", monospace';
+      ctx.fillText(tabTitle, 86, 25);
+
+      // Code content area
+      ctx.font = '12px "JetBrains Mono", monospace';
+      let y = 64;
+      codeLines.forEach((line, idx) => {
+        // Line numbers in muted zinc
+        ctx.fillStyle = '#484f58';
+        ctx.fillText(String(idx + 1).padStart(2, '0'), 16, y);
+
+        // Syntax highlighting with refined tones
+        if (line.includes('import') || line.includes('const') || line.includes('export') || line.includes('return')) {
+          ctx.fillStyle = '#ff7b72'; // keyword
+        } else if (line.includes('//')) {
+          ctx.fillStyle = '#8b949e'; // comment
+        } else {
+          ctx.fillStyle = '#c9d1d9'; // default text
+        }
+        ctx.fillText(line, 48, y);
+        y += 22;
+      });
+
+      // Status Bar
+      ctx.fillStyle = '#161b22';
+      ctx.fillRect(0, c.height - 22, c.width, 22);
+      ctx.fillStyle = '#8b949e';
+      ctx.font = '10px "JetBrains Mono", monospace';
+      ctx.fillText(`main* | UTF-8 | ${activeLang} | VTU Belagavi`, 16, c.height - 7);
+
+      const texture = new THREE.CanvasTexture(c);
+      texture.anisotropy = 4;
+      return texture;
+    }
+
+    function createCodeCanvasTexture(title, accentColor, lines) {
+      const c = document.createElement('canvas');
+      c.width = 512;
+      c.height = 300;
+      const ctx = c.getContext('2d');
+
+      // Frosted terminal panel
+      ctx.fillStyle = 'rgba(13, 17, 23, 0.94)';
+      ctx.fillRect(0, 0, c.width, c.height);
+
+      ctx.fillStyle = accentColor;
+      ctx.font = 'bold 15px "JetBrains Mono", monospace';
+      ctx.fillText(`> ${title}`, 20, 36);
+
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.12)';
+      ctx.beginPath();
+      ctx.moveTo(20, 50);
+      ctx.lineTo(c.width - 20, 50);
+      ctx.stroke();
+
+      ctx.fillStyle = '#e6edf3';
+      ctx.font = '13px "JetBrains Mono", monospace';
+      let y = 84;
+      lines.forEach((line) => {
+        ctx.fillText(line, 24, y);
+        y += 32;
+      });
+
+      const texture = new THREE.CanvasTexture(c);
+      texture.anisotropy = 4;
+      return texture;
+    }
+
+    function createWorkstationEnvironment() {
+      // 1. Studio Floor (Subtle dark concrete / industrial matte tile)
+      const floorGeo = new THREE.PlaneGeometry(16, 16);
+      const floorMat = new THREE.MeshStandardMaterial({
+        color: 0x0c0f14,
+        roughness: 0.85,
+        metalness: 0.1
+      });
+      const floor = new THREE.Mesh(floorGeo, floorMat);
+      floor.rotation.x = -Math.PI / 2;
+      floor.receiveShadow = true;
+      scene.add(floor);
+
+      // Subtle architectural grid
+      const grid = new THREE.GridHelper(16, 32, 0x30363d, 0x161b22);
+      grid.position.y = 0.008;
+      scene.add(grid);
+
+      // 2. Executive Desk (Matte Dark Walnut with Chamfered Edge)
+      const deskTopGeo = new THREE.BoxGeometry(2.5, 0.07, 1.15);
+      const deskTopMat = new THREE.MeshStandardMaterial({
+        color: 0x181c24,
+        roughness: 0.45,
+        metalness: 0.2
+      });
+      const deskTop = new THREE.Mesh(deskTopGeo, deskTopMat);
+      deskTop.position.set(0, 0.95, 0);
+      deskTop.castShadow = true;
+      deskTop.receiveShadow = true;
+      scene.add(deskTop);
+
+      // Anodized Aluminum / Brushed Steel Desk Legs
+      const legMat = new THREE.MeshStandardMaterial({ color: 0x2d333b, metalness: 0.85, roughness: 0.25 });
+      const legGeo = new THREE.CylinderGeometry(0.03, 0.03, 0.95, 16);
+
+      const legPositions = [
+        [-1.15, 0.475, -0.48],
+        [1.15, 0.475, -0.48],
+        [-1.15, 0.475, 0.48],
+        [1.15, 0.475, 0.48],
+      ];
+      legPositions.forEach(pos => {
+        const leg = new THREE.Mesh(legGeo, legMat);
+        leg.position.set(pos[0], pos[1], pos[2]);
+        leg.castShadow = true;
+        scene.add(leg);
+      });
+
+      // Desk Leather Mat
+      const matGeo = new THREE.BoxGeometry(1.5, 0.005, 0.58);
+      const matMat = new THREE.MeshStandardMaterial({ color: 0x11141b, roughness: 0.92 });
+      const deskMat = new THREE.Mesh(matGeo, matMat);
+      deskMat.position.set(0, 0.988, 0.05);
+      scene.add(deskMat);
+
+      // Minimalist Architectural Desk Lamp (Warm tungsten source)
+      const lampBase = new THREE.Mesh(new THREE.CylinderGeometry(0.07, 0.08, 0.02, 24), legMat);
+      lampBase.position.set(-0.95, 0.99, -0.1);
+      scene.add(lampBase);
+
+      const lampPole = new THREE.Mesh(new THREE.CylinderGeometry(0.012, 0.012, 0.65, 16), legMat);
+      lampPole.position.set(-0.95, 1.32, -0.1);
+      scene.add(lampPole);
+
+      const lampHeadGeo = new THREE.ConeGeometry(0.08, 0.14, 20);
+      const lampHeadMat = new THREE.MeshStandardMaterial({ color: 0x22272e, roughness: 0.3 });
+      const lampHead = new THREE.Mesh(lampHeadGeo, lampHeadMat);
+      lampHead.position.set(-0.95, 1.65, -0.1);
+      lampHead.rotation.z = Math.PI / 4;
+      scene.add(lampHead);
+
+      // Low-profile Mechanical Keyboard & Precision Mouse
+      const kbGeo = new THREE.BoxGeometry(0.42, 0.018, 0.14);
+      const kbMat = new THREE.MeshStandardMaterial({ color: 0x22272e, roughness: 0.5 });
+      const keyboard = new THREE.Mesh(kbGeo, kbMat);
+      keyboard.position.set(0, 1.0, 0.12);
+      scene.add(keyboard);
+
+      const mouseGeo = new THREE.BoxGeometry(0.065, 0.022, 0.1);
+      const mouseMat = new THREE.MeshStandardMaterial({ color: 0x2d333b, roughness: 0.35, metalness: 0.3 });
+      const deskMouse = new THREE.Mesh(mouseGeo, mouseMat);
+      deskMouse.position.set(0.34, 1.0, 0.12);
+      scene.add(deskMouse);
+
+      // DUAL PROFESSIONAL DISPLAYS (Thin Bezels & High Density)
+      // Screen 1: UrbanSaathi Production Stack
+      const screen1Texture = createIDETexture('UrbanSaathi.tsx', 'TypeScript', [
+        'import { ServiceRouter } from "@/services";',
+        'export async function getUrbanServices() {',
+        '  const directory = await fetchDirectory("Belagavi");',
+        '  return directory.filter(s => s.isVerified);',
+        '}',
+        '// Status: 200 OK | Edge Deployed on Vercel',
+        'console.log("UrbanSaathi client initialized.");'
+      ]);
+
+      const monitorBezelMat = new THREE.MeshStandardMaterial({ color: 0x161b22, metalness: 0.75, roughness: 0.3 });
+      const screenGeo = new THREE.BoxGeometry(0.88, 0.52, 0.018);
+
+      // Screen 1 Mesh
+      const screenMat1 = new THREE.MeshStandardMaterial({
+        map: screen1Texture,
+        roughness: 0.3,
+        emissive: 0xffffff,
+        emissiveMap: screen1Texture,
+        emissiveIntensity: 0.78
+      });
+      const screen1 = new THREE.Mesh(screenGeo, screenMat1);
+      screen1.position.set(-0.47, 1.38, -0.14);
+      screen1.rotation.y = 0.2;
+      screen1.castShadow = true;
+      screen1.userData = { id: 'screen1', label: 'UrbanSaathi Project' };
+      scene.add(screen1);
+      interactiveObjects.push(screen1);
+
+      // Screen 1 Stand
+      const stand1 = new THREE.Mesh(new THREE.CylinderGeometry(0.018, 0.018, 0.38), monitorBezelMat);
+      stand1.position.set(-0.47, 1.15, -0.18);
+      scene.add(stand1);
+
+      // Screen 2: GitBug AI Inspector
+      const screen2Texture = createIDETexture('GitBugASTAnalyzer.ts', 'TypeScript', [
+        'import { ASTParser, VulnerabilityScanner } from "@gitbug/core";',
+        'export const runAnalysis = (repoTree: GitTree) => {',
+        '  const ast = ASTParser.generate(repoTree);',
+        '  const regressions = VulnerabilityScanner.findBugs(ast);',
+        '  return { totalBugs: regressions.length, score: 98 };',
+        '};',
+        '// Parsing Abstract Syntax Trees...'
+      ]);
+
+      const screenMat2 = new THREE.MeshStandardMaterial({
+        map: screen2Texture,
+        roughness: 0.3,
+        emissive: 0xffffff,
+        emissiveMap: screen2Texture,
+        emissiveIntensity: 0.78
+      });
+      const screen2 = new THREE.Mesh(screenGeo, screenMat2);
+      screen2.position.set(0.47, 1.38, -0.14);
+      screen2.rotation.y = -0.2;
+      screen2.castShadow = true;
+      screen2.userData = { id: 'screen2', label: 'GitBug AI Analyzer' };
+      scene.add(screen2);
+      interactiveObjects.push(screen2);
+
+      // Screen 2 Stand
+      const stand2 = new THREE.Mesh(new THREE.CylinderGeometry(0.018, 0.018, 0.38), monitorBezelMat);
+      stand2.position.set(0.47, 1.15, -0.18);
+      scene.add(stand2);
+
+      // DESK ACCESSORIES
+      // Coffee Mug (VTU Belagavi Badge)
+      const mugGeo = new THREE.CylinderGeometry(0.045, 0.04, 0.1, 16);
+      const mugMat = new THREE.MeshStandardMaterial({ color: 0xf59e0b, roughness: 0.2, metalness: 0.1 });
+      const mug = new THREE.Mesh(mugGeo, mugMat);
+      mug.position.set(-0.65, 1.05, 0.15);
+      mug.userData = { id: 'vtuBadge', label: 'VTU CSBS Student Badge' };
+      scene.add(mug);
+      interactiveObjects.push(mug);
+
+      // Coffee liquid
+      const coffeeGeo = new THREE.CylinderGeometry(0.04, 0.04, 0.01, 16);
+      const coffeeMat = new THREE.MeshStandardMaterial({ color: 0x3d1d05, roughness: 0.1 });
+      const coffee = new THREE.Mesh(coffeeGeo, coffeeMat);
+      coffee.position.set(-0.65, 1.09, 0.15);
+      scene.add(coffee);
+
+      // FLOATING HOLOGRAPHIC DSA TERMINAL (Above keyboard / mid-air)
+      const holoGeo = new THREE.PlaneGeometry(0.7, 0.45);
+      const holoTex = createCodeCanvasTexture('DSA Telemetry // 120+ Solved', '#3fb950', [
+        'Streak: 34 Days Active [Daily LeetCode/TUF]',
+        'Total Solved: 120+ Problems',
+        'Top Topics: Trees, Graphs, DP, Binary Search',
+        'Status: Ongoing Algorithmic Mastery',
+        'Click to inspect problem stats & profiles.'
+      ]);
+      const holoMat = new THREE.MeshBasicMaterial({
+        map: holoTex,
+        transparent: true,
+        opacity: 0.88,
+        side: THREE.DoubleSide
+      });
+      const dsaHologram = new THREE.Mesh(holoGeo, holoMat);
+      dsaHologram.position.set(0, 1.65, 0.25);
+      dsaHologram.rotation.x = -0.15;
+      dsaHologram.userData = { id: 'dsaTerminal', label: 'DSA Hologram Terminal' };
+      scene.add(dsaHologram);
+      interactiveObjects.push(dsaHologram);
+
+      // FLOATING HOTSPOT RINGS (Visual Indicators)
+      createHotspotBeacon(screen1.position.x, screen1.position.y + 0.35, screen1.position.z, 0x388bfd);
+      createHotspotBeacon(screen2.position.x, screen2.position.y + 0.35, screen2.position.z, 0xd29922);
+      createHotspotBeacon(dsaHologram.position.x, dsaHologram.position.y + 0.3, dsaHologram.position.z, 0x3fb950);
+      createHotspotBeacon(mug.position.x, mug.position.y + 0.15, mug.position.z, 0xf59e0b);
+
+      // REALISTIC PROGRAMMER FIGURE (Sculpted character matching reference image)
+      createRealisticProgrammerFigure();
+    }
+
+    function createHotspotBeacon(x, y, z, colorHex) {
+      const beaconGroup = new THREE.Group();
+      beaconGroup.position.set(x, y, z);
+
+      const ringGeo = new THREE.RingGeometry(0.045, 0.055, 32);
+      const ringMat = new THREE.MeshBasicMaterial({
+        color: colorHex,
+        side: THREE.DoubleSide,
+        transparent: true,
+        opacity: 0.8
+      });
+      const ring = new THREE.Mesh(ringGeo, ringMat);
+      ring.rotation.x = Math.PI / 2;
+      beaconGroup.add(ring);
+
+      const dotGeo = new THREE.SphereGeometry(0.018, 16, 16);
+      const dotMat = new THREE.MeshBasicMaterial({ color: colorHex });
+      const dot = new THREE.Mesh(dotGeo, dotMat);
+      beaconGroup.add(dot);
+
+      scene.add(beaconGroup);
+
+      gsap.to(beaconGroup.position, {
+        y: y + 0.04,
+        duration: 1.6,
+        repeat: -1,
+        yoyo: true,
+        ease: 'sine.inOut'
+      });
+    }
+
+    /* =========================================================================
+       REALISTIC HUMAN-LIKE PROGRAMMER FIGURE (Matching Reference Image)
+       Stylized Pixar/Disney 3D character with tailored shirt, tie, glasses, watch, & khaki pants
+       ========================================================================= */
+    function createRealisticProgrammerFigure() {
+      const programmerGroup = new THREE.Group();
+      programmerGroup.position.set(0, 0, 0.7); // seated at the desk
+
+      // 1. ERGONOMIC OFFICE CHAIR
+      const chairMat = new THREE.MeshStandardMaterial({ color: 0x1e2430, roughness: 0.65 });
+      const chairMetalMat = new THREE.MeshStandardMaterial({ color: 0x475569, metalness: 0.85, roughness: 0.25 });
+
+      // Chair Base, Gas Cylinder & Star Castor
+      const chairPole = new THREE.Mesh(new THREE.CylinderGeometry(0.028, 0.028, 0.45, 16), chairMetalMat);
+      chairPole.position.set(0, 0.25, 0);
+      chairPole.castShadow = true;
+      programmerGroup.add(chairPole);
+
+      const castorBase = new THREE.Mesh(new THREE.CylinderGeometry(0.28, 0.28, 0.04, 5), chairMetalMat);
+      castorBase.position.set(0, 0.05, 0);
+      programmerGroup.add(castorBase);
+
+      // Ergonomic Curved Seat
+      const seat = new THREE.Mesh(new THREE.BoxGeometry(0.56, 0.09, 0.52), chairMat);
+      seat.position.set(0, 0.51, 0);
+      seat.castShadow = true;
+      programmerGroup.add(seat);
+
+      // Ergonomic Mesh Backrest with gentle lumber tilt
+      const backrest = new THREE.Mesh(new THREE.BoxGeometry(0.48, 0.68, 0.07), chairMat);
+      backrest.position.set(0, 0.94, 0.23);
+      backrest.rotation.x = -0.08;
+      backrest.castShadow = true;
+      programmerGroup.add(backrest);
+
+      // 2. CHARACTER MATERIALS (Warm, expressive Pixar/Disney skin & styling)
+      const skinMat = new THREE.MeshStandardMaterial({
+        color: 0xf6cbaf, // Warm, vibrant realistic cartoon skin tone
+        roughness: 0.52,
+        metalness: 0.02
+      });
+
+      const shirtMat = new THREE.MeshStandardMaterial({
+        color: 0xbfd1e5, // Light blue-grey collared Oxford shirt
+        roughness: 0.75,
+        metalness: 0.02
+      });
+
+      const tieMat = new THREE.MeshStandardMaterial({
+        color: 0x1e3a5f, // Deep navy tie with subtle golden accent
+        roughness: 0.5,
+        metalness: 0.1
+      });
+
+      const khakiMat = new THREE.MeshStandardMaterial({
+        color: 0xb57b42, // Rich tan/khaki trousers
+        roughness: 0.8,
+        metalness: 0.02
+      });
+
+      const beltMat = new THREE.MeshStandardMaterial({
+        color: 0x422616, // Dark chocolate brown leather belt
+        roughness: 0.4,
+        metalness: 0.15
+      });
+
+      const buckleMat = new THREE.MeshStandardMaterial({
+        color: 0xd4af37, // Golden/brass belt buckle
+        metalness: 0.8,
+        roughness: 0.3
+      });
+
+      const hairMat = new THREE.MeshStandardMaterial({
+        color: 0x241711, // Dark glossy chestnut hair
+        roughness: 0.45,
+        metalness: 0.1
+      });
+
+      const glassesMat = new THREE.MeshStandardMaterial({
+        color: 0x111625, // Thick black modern rounded frames
+        roughness: 0.2,
+        metalness: 0.3
+      });
+
+      const shoeMat = new THREE.MeshStandardMaterial({
+        color: 0x231812, // Polished dark brown dress shoes
+        roughness: 0.35,
+        metalness: 0.1
+      });
+
+      // 3. LOWER BODY (Khaki pants seated forward)
+      // Thighs
+      const thighL = new THREE.Mesh(new THREE.CylinderGeometry(0.085, 0.08, 0.46, 16), khakiMat);
+      thighL.rotation.x = Math.PI / 2;
+      thighL.position.set(-0.15, 0.56, -0.16);
+      thighL.castShadow = true;
+      programmerGroup.add(thighL);
+
+      const thighR = new THREE.Mesh(new THREE.CylinderGeometry(0.085, 0.08, 0.46, 16), khakiMat);
+      thighR.rotation.x = Math.PI / 2;
+      thighR.position.set(0.15, 0.56, -0.16);
+      thighR.castShadow = true;
+      programmerGroup.add(thighR);
+
+      // Calves / Lower legs
+      const calfL = new THREE.Mesh(new THREE.CylinderGeometry(0.075, 0.065, 0.44, 16), khakiMat);
+      calfL.position.set(-0.15, 0.28, -0.37);
+      calfL.castShadow = true;
+      programmerGroup.add(calfL);
+
+      const calfR = new THREE.Mesh(new THREE.CylinderGeometry(0.075, 0.065, 0.44, 16), khakiMat);
+      calfR.position.set(0.15, 0.28, -0.37);
+      calfR.castShadow = true;
+      programmerGroup.add(calfR);
+
+      // Leather Dress Shoes
+      const shoeGeo = new THREE.BoxGeometry(0.12, 0.08, 0.23);
+      const shoeL = new THREE.Mesh(shoeGeo, shoeMat);
+      shoeL.position.set(-0.15, 0.05, -0.4);
+      programmerGroup.add(shoeL);
+
+      const shoeR = new THREE.Mesh(shoeGeo, shoeMat);
+      shoeR.position.set(0.15, 0.05, -0.4);
+      programmerGroup.add(shoeR);
+
+      // 4. TORSO & APPAREL (Button-up shirt, collar, tie, belt)
+      // Leather Belt & Buckle
+      const belt = new THREE.Mesh(new THREE.CylinderGeometry(0.19, 0.19, 0.05, 24), beltMat);
+      belt.position.set(0, 0.62, 0.05);
+      programmerGroup.add(belt);
+
+      const buckle = new THREE.Mesh(new THREE.BoxGeometry(0.05, 0.045, 0.02), buckleMat);
+      buckle.position.set(0, 0.62, -0.14);
+      programmerGroup.add(buckle);
+
+      // Shirt Body (Tapered, natural posture)
+      const torsoGeo = new THREE.CylinderGeometry(0.18, 0.2, 0.52, 20);
+      const torso = new THREE.Mesh(torsoGeo, shirtMat);
+      torso.position.set(0, 0.88, 0.05);
+      torso.rotation.x = 0.06;
+      torso.castShadow = true;
+      programmerGroup.add(torso);
+
+      // Shirt Collar (Distinctive Oxford folded collar)
+      const collarL = new THREE.Mesh(new THREE.BoxGeometry(0.04, 0.07, 0.11), shirtMat);
+      collarL.position.set(-0.06, 1.15, -0.06);
+      collarL.rotation.set(0.2, -0.4, 0.3);
+      programmerGroup.add(collarL);
+
+      const collarR = new THREE.Mesh(new THREE.BoxGeometry(0.04, 0.07, 0.11), shirtMat);
+      collarR.position.set(0.06, 1.15, -0.06);
+      collarR.rotation.set(0.2, 0.4, -0.3);
+      programmerGroup.add(collarR);
+
+      // Tie (Navy with orange/gold accent knot & blade)
+      const tieKnot = new THREE.Mesh(new THREE.ConeGeometry(0.035, 0.05, 4), tieMat);
+      tieKnot.rotation.x = Math.PI;
+      tieKnot.position.set(0, 1.12, -0.09);
+      programmerGroup.add(tieKnot);
+
+      const tieBlade = new THREE.Mesh(new THREE.BoxGeometry(0.055, 0.38, 0.015), tieMat);
+      tieBlade.position.set(0, 0.92, -0.11);
+      tieBlade.rotation.x = 0.08;
+      programmerGroup.add(tieBlade);
+
+      // Subtle tie orange/gold stripes
+      const stripeMat = new THREE.MeshBasicMaterial({ color: 0xd97706 });
+      const stripe1 = new THREE.Mesh(new THREE.BoxGeometry(0.056, 0.01, 0.016), stripeMat);
+      stripe1.position.set(0, 0.97, -0.11);
+      stripe1.rotation.x = 0.08;
+      programmerGroup.add(stripe1);
+
+      const stripe2 = new THREE.Mesh(new THREE.BoxGeometry(0.056, 0.01, 0.016), stripeMat);
+      stripe2.position.set(0, 0.87, -0.11);
+      stripe2.rotation.x = 0.08;
+      programmerGroup.add(stripe2);
+
+      // 5. ARMS (Rolled-up sleeves, wristwatch, and hands on keyboard/mouse)
+      // Left Upper Arm (Shirt)
+      const armUpperL = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.055, 0.28, 16), shirtMat);
+      armUpperL.position.set(-0.24, 0.96, -0.02);
+      armUpperL.rotation.set(0.4, 0, 0.25);
+      programmerGroup.add(armUpperL);
+
+      // Left Rolled Sleeve Cuff
+      const cuffL = new THREE.Mesh(new THREE.TorusGeometry(0.058, 0.018, 12, 24), shirtMat);
+      cuffL.position.set(-0.21, 0.86, -0.13);
+      cuffL.rotation.x = 0.4;
+      programmerGroup.add(cuffL);
+
+      // Left Forearm (Exposed Skin)
+      const armLowerL = new THREE.Mesh(new THREE.CylinderGeometry(0.045, 0.04, 0.3, 16), skinMat);
+      armLowerL.position.set(-0.17, 0.96, -0.3);
+      armLowerL.rotation.set(1.4, 0, -0.28);
+      programmerGroup.add(armLowerL);
+
+      // Left Hand on keyboard
+      const handL = new THREE.Mesh(new THREE.SphereGeometry(0.04, 16, 16), skinMat);
+      handL.scale.set(1.2, 0.6, 1.4);
+      handL.position.set(-0.1, 1.01, -0.48);
+      programmerGroup.add(handL);
+
+      // Right Upper Arm (Shirt)
+      const armUpperR = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.055, 0.28, 16), shirtMat);
+      armUpperR.position.set(0.24, 0.96, -0.02);
+      armUpperR.rotation.set(0.4, 0, -0.25);
+      programmerGroup.add(armUpperR);
+
+      // Right Rolled Sleeve Cuff
+      const cuffR = new THREE.Mesh(new THREE.TorusGeometry(0.058, 0.018, 12, 24), shirtMat);
+      cuffR.position.set(0.21, 0.86, -0.13);
+      cuffR.rotation.x = 0.4;
+      programmerGroup.add(cuffR);
+
+      // Right Forearm (Exposed Skin)
+      const armLowerR = new THREE.Mesh(new THREE.CylinderGeometry(0.045, 0.04, 0.3, 16), skinMat);
+      armLowerR.position.set(0.22, 0.96, -0.3);
+      armLowerR.rotation.set(1.4, 0, 0.22);
+      programmerGroup.add(armLowerR);
+
+      // Smart Watch on Right Wrist (from reference image)
+      const watchStrap = new THREE.Mesh(new THREE.CylinderGeometry(0.046, 0.046, 0.03, 16), new THREE.MeshStandardMaterial({ color: 0x1f2937, roughness: 0.3 }));
+      watchStrap.position.set(0.28, 0.99, -0.42);
+      watchStrap.rotation.x = Math.PI / 2;
+      programmerGroup.add(watchStrap);
+
+      const watchFace = new THREE.Mesh(new THREE.BoxGeometry(0.032, 0.035, 0.012), new THREE.MeshStandardMaterial({ color: 0x0f172a, metalness: 0.8, roughness: 0.2 }));
+      watchFace.position.set(0.28, 1.025, -0.42);
+      programmerGroup.add(watchFace);
+
+      // Right Hand on Mouse
+      const handR = new THREE.Mesh(new THREE.SphereGeometry(0.04, 16, 16), skinMat);
+      handR.scale.set(1.2, 0.6, 1.4);
+      handR.position.set(0.35, 1.01, -0.48);
+      programmerGroup.add(handR);
+
+      // 6. DETAILED REALISTIC FACE & HEAD (Pixar / Stylized Human Aesthetic)
+      // Neck
+      const neck = new THREE.Mesh(new THREE.CylinderGeometry(0.058, 0.065, 0.16, 20), skinMat);
+      neck.position.set(0, 1.2, 0.01);
+      programmerGroup.add(neck);
+
+      // Head Group (allows natural gaze angle)
+      const headGroup = new THREE.Group();
+      headGroup.position.set(0, 1.34, 0.02);
+      headGroup.rotation.x = 0.09; // attentive angle toward code monitors
+
+      // Sculpted Head / Cranium
+      const craniumGeo = new THREE.SphereGeometry(0.145, 32, 32);
+      craniumGeo.scale(0.88, 1.12, 0.95);
+      const headMesh = new THREE.Mesh(craniumGeo, skinMat);
+      headMesh.castShadow = true;
+      headGroup.add(headMesh);
+
+      // Sculpted Jaw / Chin
+      const chinGeo = new THREE.SphereGeometry(0.08, 20, 20);
+      chinGeo.scale(0.9, 0.8, 1.0);
+      const chin = new THREE.Mesh(chinGeo, skinMat);
+      chin.position.set(0, -0.08, -0.09);
+      headGroup.add(chin);
+
+      // Warm Cheeks
+      const cheekL = new THREE.Mesh(new THREE.SphereGeometry(0.05, 16, 16), skinMat);
+      cheekL.position.set(-0.07, -0.02, -0.09);
+      headGroup.add(cheekL);
+
+      const cheekR = new THREE.Mesh(new THREE.SphereGeometry(0.05, 16, 16), skinMat);
+      cheekR.position.set(0.07, -0.02, -0.09);
+      headGroup.add(cheekR);
+
+      // Sculpted Friendly Nose
+      const noseGeo = new THREE.ConeGeometry(0.025, 0.07, 16);
+      const nose = new THREE.Mesh(noseGeo, skinMat);
+      nose.rotation.x = -0.3;
+      nose.position.set(0, 0.01, -0.155);
+      headGroup.add(nose);
+
+      const noseTip = new THREE.Mesh(new THREE.SphereGeometry(0.02, 16, 16), skinMat);
+      noseTip.position.set(0, -0.01, -0.16);
+      headGroup.add(noseTip);
+
+      // Smile / Mouth (Clean friendly Pixar-style smile)
+      const smileLipMat = new THREE.MeshStandardMaterial({ color: 0xd9776f, roughness: 0.6 });
+      const teethMat = new THREE.MeshStandardMaterial({ color: 0xfdfdfd, roughness: 0.2 });
+
+      const smileLip = new THREE.Mesh(new THREE.TorusGeometry(0.038, 0.009, 12, 24, Math.PI), smileLipMat);
+      smileLip.rotation.z = Math.PI;
+      smileLip.position.set(0, -0.06, -0.145);
+      headGroup.add(smileLip);
+
+      const teeth = new THREE.Mesh(new THREE.BoxGeometry(0.045, 0.012, 0.01), teethMat);
+      teeth.position.set(0, -0.053, -0.14);
+      headGroup.add(teeth);
+
+      // Ears
+      const earGeo = new THREE.SphereGeometry(0.038, 16, 16);
+      earGeo.scale(0.5, 1.2, 0.8);
+      const earL = new THREE.Mesh(earGeo, skinMat);
+      earL.position.set(-0.135, 0.02, 0.01);
+      earL.rotation.y = -0.2;
+      headGroup.add(earL);
+
+      const earR = new THREE.Mesh(earGeo, skinMat);
+      earR.position.set(0.135, 0.02, 0.01);
+      earR.rotation.y = 0.2;
+      headGroup.add(earR);
+
+      // Expressive Eyes (Sclera + Dark Iris + Specular Reflection like reference)
+      const eyeWhiteMat = new THREE.MeshStandardMaterial({ color: 0xfafafa, roughness: 0.1 });
+      const irisMat = new THREE.MeshStandardMaterial({ color: 0x271911, roughness: 0.1 });
+      const pupilReflectionMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
+
+      // Left Eye
+      const eyeL = new THREE.Mesh(new THREE.SphereGeometry(0.032, 20, 20), eyeWhiteMat);
+      eyeL.position.set(-0.052, 0.045, -0.125);
+      headGroup.add(eyeL);
+
+      const irisL = new THREE.Mesh(new THREE.SphereGeometry(0.019, 16, 16), irisMat);
+      irisL.position.set(-0.052, 0.045, -0.15);
+      headGroup.add(irisL);
+
+      const glintL = new THREE.Mesh(new THREE.SphereGeometry(0.006, 8, 8), pupilReflectionMat);
+      glintL.position.set(-0.047, 0.052, -0.165);
+      headGroup.add(glintL);
+
+      // Right Eye
+      const eyeR = new THREE.Mesh(new THREE.SphereGeometry(0.032, 20, 20), eyeWhiteMat);
+      eyeR.position.set(0.052, 0.045, -0.125);
+      headGroup.add(eyeR);
+
+      const irisR = new THREE.Mesh(new THREE.SphereGeometry(0.019, 16, 16), irisMat);
+      irisR.position.set(0.052, 0.045, -0.15);
+      headGroup.add(irisR);
+
+      const glintR = new THREE.Mesh(new THREE.SphereGeometry(0.006, 8, 8), pupilReflectionMat);
+      glintR.position.set(0.057, 0.052, -0.165);
+      headGroup.add(glintR);
+
+      // Expressive Eyebrows
+      const browMat = new THREE.MeshStandardMaterial({ color: 0x1a120c, roughness: 0.8 });
+      const browL = new THREE.Mesh(new THREE.BoxGeometry(0.055, 0.014, 0.012), browMat);
+      browL.position.set(-0.055, 0.09, -0.138);
+      browL.rotation.z = -0.15;
+      headGroup.add(browL);
+
+      const browR = new THREE.Mesh(new THREE.BoxGeometry(0.055, 0.014, 0.012), browMat);
+      browR.position.set(0.055, 0.09, -0.138);
+      browR.rotation.z = 0.15;
+      headGroup.add(browR);
+
+      // Rounded-Square Thick Glasses (Directly matching image glasses)
+      const glassesFrameGeo = new THREE.TorusGeometry(0.036, 0.007, 16, 32);
+      const rimL = new THREE.Mesh(glassesFrameGeo, glassesMat);
+      rimL.position.set(-0.052, 0.045, -0.15);
+      headGroup.add(rimL);
+
+      const rimR = new THREE.Mesh(glassesFrameGeo, glassesMat);
+      rimR.position.set(0.052, 0.045, -0.15);
+      headGroup.add(rimR);
+
+      const glassBridge = new THREE.Mesh(new THREE.BoxGeometry(0.034, 0.008, 0.008), glassesMat);
+      glassBridge.position.set(0, 0.05, -0.152);
+      headGroup.add(glassBridge);
+
+      // Glasses Temples going back to ears
+      const templeL = new THREE.Mesh(new THREE.BoxGeometry(0.007, 0.007, 0.15), glassesMat);
+      templeL.position.set(-0.09, 0.048, -0.07);
+      templeL.rotation.y = -0.18;
+      headGroup.add(templeL);
+
+      const templeR = new THREE.Mesh(new THREE.BoxGeometry(0.007, 0.007, 0.15), glassesMat);
+      templeR.position.set(0.09, 0.048, -0.07);
+      templeR.rotation.y = 0.18;
+      headGroup.add(templeR);
+
+      // Styled Swept-Back Volumetric Hair (Pixar styled wave)
+      const hairMain = new THREE.Mesh(new THREE.SphereGeometry(0.152, 24, 24), hairMat);
+      hairMain.scale.set(0.92, 1.15, 1.05);
+      hairMain.position.set(0, 0.05, 0.02);
+      headGroup.add(hairMain);
+
+      // Swept front wave / quiff
+      const quiff = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.11, 0.16, 16), hairMat);
+      quiff.rotation.set(-1.1, 0.4, -0.3);
+      quiff.position.set(0.02, 0.15, -0.08);
+      headGroup.add(quiff);
+
+      const sideburnL = new THREE.Mesh(new THREE.BoxGeometry(0.02, 0.07, 0.03), hairMat);
+      sideburnL.position.set(-0.128, 0.03, -0.04);
+      headGroup.add(sideburnL);
+
+      const sideburnR = new THREE.Mesh(new THREE.BoxGeometry(0.02, 0.07, 0.03), hairMat);
+      sideburnR.position.set(0.128, 0.03, -0.04);
+      headGroup.add(sideburnR);
+
+      programmerGroup.add(headGroup);
+
+      // Add character to scene
+      scene.add(programmerGroup);
+
+      // Natural subtle idle animations: breathing & rhythmic typing
+      gsap.to(torso.scale, {
+        y: 1.025,
+        x: 1.015,
+        duration: 2.4,
+        repeat: -1,
+        yoyo: true,
+        ease: 'sine.inOut'
+      });
+
+      gsap.to(headGroup.position, {
+        y: 1.348,
+        duration: 2.4,
+        repeat: -1,
+        yoyo: true,
+        ease: 'sine.inOut'
+      });
+
+      // Subtle active typing on keyboard
+      gsap.to(handL.position, {
+        y: 1.02,
+        duration: 0.18,
+        repeat: -1,
+        yoyo: true,
+        ease: 'power1.inOut'
+      });
+    }
+
+    /* =========================================================================
+       MOUSE EVENTS & INTERACTIVE RAYCASTING
+       ========================================================================= */
+    function onWindowResize() {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+    }
+
+    function onSceneMouseMove(e) {
+      mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
+      mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
+
+      if (camera && !isInspecting) {
+        gsap.to(camera.position, {
+          x: DEFAULT_CAM_POS.x + mouse.x * 0.35,
+          y: DEFAULT_CAM_POS.y + mouse.y * 0.25,
+          duration: 1.4,
+          ease: 'power2.out'
+        });
+      }
+
+      raycaster.setFromCamera(mouse, camera);
+      const intersects = raycaster.intersectObjects(interactiveObjects);
+
+      if (intersects.length > 0) {
+        const hit = intersects[0].object;
+        if (hoveredObject !== hit) {
+          hoveredObject = hit;
+          document.body.style.cursor = 'pointer';
+          if (cursorOutline) {
+            cursorOutline.style.width = '48px';
+            cursorOutline.style.height = '48px';
+            cursorOutline.style.borderColor = 'rgba(240, 243, 246, 0.8)';
+          }
+        }
+      } else {
+        if (hoveredObject !== null) {
+          hoveredObject = null;
+          document.body.style.cursor = 'default';
+          if (cursorOutline) {
+            cursorOutline.style.width = '32px';
+            cursorOutline.style.height = '32px';
+            cursorOutline.style.borderColor = 'rgba(240, 243, 246, 0.35)';
+          }
+        }
+      }
+    }
+
+    function onSceneClick(e) {
+      if (e.clientY > window.innerHeight * 0.94) return;
+      raycaster.setFromCamera(mouse, camera);
+      const intersects = raycaster.intersectObjects(interactiveObjects);
+      if (intersects.length > 0) {
+        const clickedObj = intersects[0].object;
+        if (clickedObj.userData && clickedObj.userData.id) {
+          triggerHotspot(clickedObj.userData.id);
+        }
+      }
+    }
+
+    /* =========================================================================
+       HOTSPOT FOCUS & INSPECTOR MODAL LOGIC
+       ========================================================================= */
+    const modalData = {
+      screen1: {
+        badge: '<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11px] font-mono bg-[#3fb950]/10 text-[#3fb950] border border-[#3fb950]/20"><span class="w-1.5 h-1.5 rounded-full bg-[#3fb950]"></span> Production Deployment</span>',
+        title: 'UrbanSaathi — Civic Services Platform',
+        body: `
+          <p>An enterprise-ready civic services web platform connecting citizens with municipal utilities, localized emergency resources, and neighborhood assistance providers.</p>
+          <div class="executive-card p-3 rounded-xl text-xs font-mono text-[#8b949e] space-y-1 my-3">
+            <div><strong class="text-[#f0f3f6]">Architecture:</strong> React, Next.js, Tailwind CSS</div>
+            <div><strong class="text-[#f0f3f6]">Infrastructure:</strong> Deployed on Vercel Edge Network</div>
+            <div><strong class="text-[#f0f3f6]">Live Production:</strong> <a href="https://urban-saathi.vercel.app" target="_blank" class="text-[#388bfd] underline">urban-saathi.vercel.app</a></div>
+          </div>
+        `,
+        actions: `
+          <a href="https://urban-saathi.vercel.app" target="_blank" class="px-4 py-2 rounded-xl bg-[#21262d] hover:bg-[#30363d] text-[#f0f3f6] border border-white/10 font-medium text-xs flex items-center gap-2">
+            <i data-lucide="external-link" class="w-3.5 h-3.5 text-[#388bfd]"></i> Open Live App
+          </a>
+          <button onclick="closeInspectorModal()" class="px-4 py-2 rounded-xl executive-card text-[#8b949e] hover:text-[#f0f3f6] text-xs font-medium">Close</button>
+        `,
+        cameraPos: { x: -0.58, y: 1.48, z: 0.85 },
+        targetPos: { x: -0.47, y: 1.38, z: -0.14 }
+      },
+      screen2: {
+        badge: '<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11px] font-mono bg-[#d29922]/10 text-[#d29922] border border-[#d29922]/20"><span class="w-1.5 h-1.5 rounded-full bg-[#d29922]"></span> Active Development</span>',
+        title: 'GitBug AI — Static Analysis & Bug Detection',
+        body: `
+          <p>Automated repository diagnostics engine that ingests Git trees, compiles Abstract Syntax Trees (ASTs), executes semantic validation, and pinpoints structural vulnerabilities.</p>
+          <div class="executive-card p-3 rounded-xl text-xs font-mono text-[#8b949e] space-y-1 my-3">
+            <div><strong class="text-[#f0f3f6]">Core Engine:</strong> AST Generation, Multi-file Graph Traversal</div>
+            <div><strong class="text-[#f0f3f6]">Target:</strong> Automated Pull Request Code Review & Linting</div>
+          </div>
+        `,
+        actions: `
+          <a href="https://github.com/Harish-Nesrekar" target="_blank" class="px-4 py-2 rounded-xl bg-[#21262d] hover:bg-[#30363d] text-[#f0f3f6] border border-white/10 font-medium text-xs flex items-center gap-2">
+            <i data-lucide="github" class="w-3.5 h-3.5"></i> View Repository
+          </a>
+          <button onclick="closeInspectorModal()" class="px-4 py-2 rounded-xl executive-card text-[#8b949e] hover:text-[#f0f3f6] text-xs font-medium">Close</button>
+        `,
+        cameraPos: { x: 0.58, y: 1.48, z: 0.85 },
+        targetPos: { x: 0.47, y: 1.38, z: -0.14 }
+      },
+      dsaTerminal: {
+        badge: '<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11px] font-mono bg-[#3fb950]/10 text-[#3fb950] border border-[#3fb950]/20"><span class="w-1.5 h-1.5 rounded-full bg-[#3fb950]"></span> 34-Day Continuous Streak</span>',
+        title: 'Algorithmic Practice & Mastery',
+        body: `
+          <p>Over 120 algorithmic challenges completed across LeetCode and takeUforward with daily disciplined practice in Dynamic Programming, Graph Theory, and Tree Traversal.</p>
+          <div class="grid grid-cols-2 gap-2 text-xs font-mono my-3">
+            <div class="executive-card p-2.5 rounded-lg text-center">
+              <div class="text-[#8b949e]">Solved</div>
+              <div class="text-base font-semibold text-[#f0f3f6]">120+</div>
+            </div>
+            <div class="executive-card p-2.5 rounded-lg text-center">
+              <div class="text-[#8b949e]">Streak</div>
+              <div class="text-base font-semibold text-[#3fb950]">34 Days</div>
+            </div>
+          </div>
+        `,
+        actions: `
+          <a href="https://leetcode.com/u/harish-nesrekar/" target="_blank" class="px-3.5 py-2 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 text-[#e6edf3] font-mono text-xs flex items-center gap-1.5">
+            <i data-lucide="code" class="w-3.5 h-3.5 text-[#d29922]"></i> LeetCode
+          </a>
+          <a href="https://takeuforward.org/profile/harish_nesrekar" target="_blank" class="px-3.5 py-2 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 text-[#e6edf3] font-mono text-xs flex items-center gap-1.5">
+            <i data-lucide="external-link" class="w-3.5 h-3.5 text-[#388bfd]"></i> takeUforward
+          </a>
+          <button onclick="closeInspectorModal()" class="px-3.5 py-2 rounded-xl executive-card text-[#8b949e] hover:text-[#f0f3f6] text-xs font-medium">Close</button>
+        `,
+        cameraPos: { x: 0, y: 1.72, z: 0.95 },
+        targetPos: { x: 0, y: 1.62, z: 0.22 }
+      },
+      vtuBadge: {
+        badge: '<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11px] font-mono bg-[#388bfd]/10 text-[#388bfd] border border-[#388bfd]/20">Academic Profile</span>',
+        title: 'Visvesvaraya Technological University (VTU)',
+        body: `
+          <p>Third-year undergraduate student enrolled in <strong>B.Tech Computer Science and Business Systems (CSBS)</strong> at VTU Belagavi, Karnataka.</p>
+          <div class="executive-card p-3 rounded-xl text-xs font-mono text-[#8b949e] space-y-1 my-3">
+            <div><strong class="text-[#f0f3f6]">Branch:</strong> Computer Science and Business Systems</div>
+            <div><strong class="text-[#f0f3f6]">Graduation:</strong> Expected 2028</div>
+            <div><strong class="text-[#f0f3f6]">Campus:</strong> Belagavi, Karnataka, India</div>
+          </div>
+        `,
+        actions: `
+          <a href="https://www.linkedin.com/in/harish-nesrekar-63a724333/" target="_blank" class="px-4 py-2 rounded-xl bg-[#21262d] hover:bg-[#30363d] text-[#f0f3f6] border border-white/10 font-medium text-xs flex items-center gap-2">
+            <i data-lucide="linkedin" class="w-3.5 h-3.5 text-[#388bfd]"></i> LinkedIn Network
+          </a>
+          <button onclick="closeInspectorModal()" class="px-4 py-2 rounded-xl executive-card text-[#8b949e] hover:text-[#f0f3f6] text-xs font-medium">Close</button>
+        `,
+        cameraPos: { x: -0.68, y: 1.3, z: 0.6 },
+        targetPos: { x: -0.64, y: 1.035, z: 0.15 }
+      }
+    };
+
+    function triggerHotspot(id) {
+      const data = modalData[id];
+      if (!data) return;
+
+      isInspecting = true;
+
+      gsap.to(camera.position, {
+        x: data.cameraPos.x,
+        y: data.cameraPos.y,
+        z: data.cameraPos.z,
+        duration: 1.3,
+        ease: 'power3.inOut'
+      });
+      gsap.to(controls.target, {
+        x: data.targetPos.x,
+        y: data.targetPos.y,
+        z: data.targetPos.z,
+        duration: 1.3,
+        ease: 'power3.inOut',
+        onComplete: () => {
+          showInspectorModal(data);
+        }
+      });
+    }
+
+    function showInspectorModal(data) {
+      document.getElementById('modal-badge-container').innerHTML = data.badge;
+      document.getElementById('modal-title').innerText = data.title;
+      document.getElementById('modal-body').innerHTML = data.body;
+      document.getElementById('modal-actions').innerHTML = data.actions;
+      lucide.createIcons();
+
+      const modal = document.getElementById('inspector-modal');
+      const card = document.getElementById('inspector-card');
+      modal.classList.remove('opacity-0', 'pointer-events-none');
+      modal.classList.add('opacity-100');
+      card.classList.remove('scale-95');
+      card.classList.add('scale-100');
+    }
+
+    function closeInspectorModal() {
+      const modal = document.getElementById('inspector-modal');
+      const card = document.getElementById('inspector-card');
+      modal.classList.add('opacity-0', 'pointer-events-none');
+      modal.classList.remove('opacity-100');
+      card.classList.add('scale-95');
+      card.classList.remove('scale-100');
+
+      resetCamera();
+    }
+
+    function resetCamera() {
+      isInspecting = false;
+      gsap.to(camera.position, {
+        x: DEFAULT_CAM_POS.x,
+        y: DEFAULT_CAM_POS.y,
+        z: DEFAULT_CAM_POS.z,
+        duration: 1.2,
+        ease: 'power2.out'
+      });
+      gsap.to(controls.target, {
+        x: DEFAULT_TARGET.x,
+        y: DEFAULT_TARGET.y,
+        z: DEFAULT_TARGET.z,
+        duration: 1.2,
+        ease: 'power2.out'
+      });
+    }
+
+    /* =========================================================================
+       RENDER LOOP
+       ========================================================================= */
+    function animate() {
+      requestAnimationFrame(animate);
+      if (controls) controls.update();
+      if (renderer && scene && camera) {
+        renderer.render(scene, camera);
+      }
+    }
+
+    window.onload = function() {
+      initThreeScene();
+      animate();
+    };
+
+    /* =========================================================================
+       CLIPBOARD & TOAST SYSTEM
+       ========================================================================= */
+    function showToast(msg, isSuccess = true) {
+      const container = document.getElementById('toast-container');
+      const toast = document.createElement('div');
+      toast.className = `executive-card px-4 py-2.5 rounded-xl border ${isSuccess ? 'border-[#3fb950]/30 text-[#f0f3f6]' : 'border-rose-500/30 text-rose-300'} text-xs font-mono shadow-xl transition-all duration-300 transform translate-y-4 opacity-0 flex items-center gap-2`;
+      toast.innerHTML = `<span class="w-1.5 h-1.5 rounded-full ${isSuccess ? 'bg-[#3fb950]' : 'bg-rose-400'}"></span> ${msg}`;
+
+      container.appendChild(toast);
+      setTimeout(() => {
+        toast.classList.remove('translate-y-4', 'opacity-0');
+      }, 50);
+
+      setTimeout(() => {
+        toast.classList.add('opacity-0', 'translate-y-2');
+        setTimeout(() => toast.remove(), 300);
+      }, 3000);
+    }
+
+    function copyEmailToClipboard() {
+      const email = 'harishnesrekar@gmail.com';
+      const tempInput = document.createElement('input');
+      tempInput.value = email;
+      document.body.appendChild(tempInput);
+      tempInput.select();
+      try {
+        document.execCommand('copy');
+        showToast('Email copied to clipboard: ' + email, true);
+      } catch (err) {
+        showToast('harishnesrekar@gmail.com', true);
+      }
+      document.body.removeChild(tempInput);
+    }
+  </script>
+</body>
+</html>
