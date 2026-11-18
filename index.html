@@ -71,10 +71,10 @@ h1{font-size:clamp(2.3rem,8vw,6.5rem)}h2{font-size:clamp(1.75rem,5vw,3.8rem)}
 @media(min-width:1800px){body{font-size:17px}.tx{max-width:760px}}
 @media(hover:none){.btn:hover{transform:none}}
 /* signature */
-.sig{font:600 clamp(2.4rem,8.5vw,6.2rem)/1.1 Inter,system-ui,sans-serif;letter-spacing:-.035em;-webkit-text-stroke:0;transition:none;color:transparent;clip-path:inset(0 100% 0 0);padding:.05em .2em .15em 0;background:linear-gradient(100deg,#ececf0 20%,#a78bfa 45%,#ececf0 70%);background-size:250% 100%;-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;margin:.2rem 0 1rem}
-.ch.on .sig{color:transparent;animation:wr 3s cubic-bezier(.6,.05,.3,1) .4s forwards,shn 6s linear 3.4s infinite}
+.sig{font:600 clamp(2.4rem,8.5vw,6.2rem)/1.1 Inter,system-ui,sans-serif;letter-spacing:-.035em;-webkit-text-stroke:0;transition:none;color:transparent;padding:.05em .2em .15em 0;background:linear-gradient(100deg,#ececf0 20%,#a78bfa 45%,#ececf0 70%);background-size:250% 100%;-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;margin:.2rem 0 1rem}
+.ch.on .sig{color:transparent;animation:shn 6s linear infinite}
 @keyframes wr{to{clip-path:inset(0 -6% 0 0)}}@keyframes shn{to{background-position:-250% 0}}
-.sig::after{content:"";display:block;height:1px;margin-top:.05em;width:0;background:linear-gradient(90deg,var(--ac),transparent);transition:width 1.6s 3s}.ch.on .sig::after{width:65%}
+.sig::after{content:"";display:inline-block;width:.055em;height:.82em;margin-left:.07em;vertical-align:-.06em;background:var(--ac);-webkit-text-fill-color:initial;animation:bl 1s steps(1) infinite}.sig{min-height:1.15em}
 </style></head><body>
 <div id="bar"></div><canvas id="fx" aria-hidden="true"></canvas><a class="top" href="#c1">HARISH NESREKAR<span>.</span></a>
 <nav id="nav" aria-label="Chapters"></nav>
@@ -94,7 +94,7 @@ h1{font-size:clamp(2.3rem,8vw,6.5rem)}h2{font-size:clamp(1.75rem,5vw,3.8rem)}
 <section class="ch" id="c6"><div class="tx"><div class="ey">Contact &amp; connect</div><h2>Let’s <em>talk.</em></h2><div class="row"><a class="btn cfg" data-k="email">Gmail</a><a class="btn cfg" data-k="github" target="_blank" rel="noopener">GitHub</a><a class="btn cfg" data-k="linkedin" target="_blank" rel="noopener">LinkedIn</a></div>
 <p class="mono" id="mailtxt" style="font-size:.85rem;margin:.6rem 0 0"></p></div><div class="hero"><img data-p="5" alt="Harish Nesrekar giving a thumbs up"></div></section>
 
-<section class="ch" id="c7"><div class="tx"><h2>The journey has <em>just started.</em></h2><p>Building. Learning. Creating. Evolving.</p><div class="sig">Harish Nesrekar</div></div><div class="hero"><img data-p="6" alt="Harish Nesrekar standing confidently"></div></section>
+<section class="ch" id="c7"><div class="tx"><h2>The journey has <em>just started.</em></h2><p>Building. Learning. Creating. Evolving.</p><div class="sig" id="sig" role="img" aria-label="Harish Nesrekar"></div></div><div class="hero"><img data-p="6" alt="Harish Nesrekar standing confidently"></div></section>
 </main>
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js"></script>
 <script>
@@ -232,4 +232,11 @@ function frame(now){
 requestAnimationFrame(frame);
 }catch(err){root.classList.remove("g3");cv&&cv.remove();console.warn("3D disabled:",err)}
 })();
+
+/* typewriter signature (chapter 7): types "Harish Nesrekar" each time the section comes into view */
+(function(){const el=document.getElementById("sig"),sec=document.getElementById("c7");if(!el||!sec)return;
+const full="Harish Nesrekar";let tm=0;
+function stop(){clearTimeout(tm)}
+function type(){stop();let i=0;el.textContent="";(function s(){el.textContent=full.slice(0,++i);if(i<full.length)tm=setTimeout(s,90+Math.random()*70)})()}
+new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting)type();else{stop();el.textContent=""}}),{threshold:.3}).observe(sec)})();
 </script></body></html>
